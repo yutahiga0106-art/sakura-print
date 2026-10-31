@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+  :root { --ink:#1f2937; --sub:#6b7280; --line:#d1d5db; --bg:#f6f7fb; --accent:#2f6fdf; --soft:#eef4ff; --ok:#047857; --okbg:#ecfdf5; --ng:#dc2626; --ngbg:#fef2f2; --warn:#b45309; --warnbg:#fff7ed; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif; font-size: 15px; line-height: 1.7; }
+  button { font: inherit; cursor: pointer; border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 14px; }
+  button.pri { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: bold; }
+  button:disabled { opacity: .5; cursor: default; }
+  input, select { font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 12px 16px 60px; }
+  .top { background: #fff; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+  .top .wrap { padding: 8px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .brand { font-weight: bold; font-size: 17px; margin-right: auto; }
+  .tabs button { border: none; background: none; border-bottom: 3px solid transparent; border-radius: 0; padding: 6px 10px; }
+  .tabs button.on { border-bottom-color: var(--accent); color: var(--accent); font-weight: bold; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .chips button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .month { margin: 14px 0 4px; font-weight: bold; color: var(--sub); }
+  .month.now { color: var(--accent); }
+  .mgrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin: 8px 0 4px; }
+  .mgrid button { padding: 10px 0; font-size: 16px; font-weight: bold; }
+  .mgrid button.now { border-color: var(--accent); color: var(--accent); }
+  .mgrid button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .mhead { margin: 12px 0 2px; font-size: 20px; font-weight: bold; }
+  .mhead .small { font-weight: normal; margin-left: 6px; }
+  @media (max-width: 480px) { .mgrid { grid-template-columns: repeat(4, 1fr); } }
+  .unit { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; margin: 6px 0; cursor: pointer; }
+  .unit:hover { border-color: var(--accent); }
+  .unit .nm { font-weight: bold; }
+  .unit .pt { font-size: 12.5px; color: var(--sub); }
+  .unit .cnt { margin-left: auto; font-size: 12px; white-space: nowrap; color: var(--sub); }
+  .unit.empty { opacity: .6; cursor: default; }
+  .unit.test { border-style: dashed; background: #fbfcff; }
+  .wk { font-size: 12.5px; font-weight: bold; color: var(--sub); margin: 8px 0 0 4px; }
+  .wk.now { color: #fff; background: var(--accent); display: inline-block; padding: 0 8px; border-radius: 10px; }
+  .lv { display: inline-block; font-size: 11px; border: 1px solid var(--accent); color: var(--accent); border-radius: 10px; padding: 0 7px; margin-right: 4px; white-space: nowrap; }
+  .lv.標準 { border-color: #7c3aed; color: #7c3aed; } .lv.挑戦 { border-color: var(--ng); color: var(--ng); }
+  .tp { display: inline-block; font-size: 11px; background: #f3f4f6; border-radius: 4px; padding: 0 6px; margin-right: 4px; }
+  .qpick { display: flex; gap: 10px; align-items: flex-start; border-top: 1px solid #f0f0f0; padding: 8px 0; }
+  .qpick input { margin-top: 6px; width: 18px; height: 18px; }
+  .qpick .t { font-size: 14px; }
+  .small { font-size: 12.5px; color: var(--sub); }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .err { background: var(--ngbg); color: var(--ng); border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+  .msg { background: var(--okbg); color: var(--ok); border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+  .loading { color: var(--sub); padding: 20px 0; text-align: center; }
+  table.grid { border-collapse: collapse; width: 100%; background: #fff; font-size: 13.5px; }
+  table.grid th, table.grid td { border: 1px solid var(--line); padding: 4px 6px; text-align: center; }
+  table.grid th { background: #f3f4f6; font-weight: normal; font-size: 12px; }
+  table.grid td.l, table.grid th.l { text-align: left; }
+  .scroll { overflow-x: auto; }
+  .sc { width: 52px; text-align: center; padding: 4px; }
+  .sc.bad { border-color: var(--ng); background: var(--ngbg); }
+  .r0 { background: #fde2e2; } .r1 { background: #fff1d6; } .r2 { background: #eef7e8; } .r3 { background: #d7f0dc; }
+  .bar { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; min-width: 80px; }
+  .bar i { display: block; height: 100%; background: var(--accent); }
+  .login { max-width: 360px; margin: 80px auto; text-align: center; }
+  /* 分数：分子・線・分母の3段。線の上下のすき間を同じにし、線がまわりの文字のまん中の高さにくるようにする */
+  .frac { display: inline-flex; flex-direction: column; align-items: stretch; vertical-align: middle; text-align: center; line-height: 1; margin: 0 2px; font-size: .92em; }
+  .frac .fn, .frac .fd { display: block; padding: 0 2px; }
+  .frac .fl { display: block; height: 0; border-top: 1.5px solid currentColor; margin: 2px 0; }
+  .mixed { display: inline-flex; align-items: center; vertical-align: middle; margin: 0 2px; }
+  .mixed .whole { font-size: 1.05em; margin-right: 1px; }
+  .mixed .frac { margin-left: 0; font-size: .9em; }
+  /* 分数で答える問題の解答らん：分子と分母を書くわく */
+  .fbox { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 6px; }
+  .fbox .n, .fbox .d { display: block; width: 42px; height: 26px; border: 1.5px solid var(--ink); }
+  .fbox .fbar { display: block; width: 56px; border-top: 2px solid var(--ink); margin: 3px 0; }
+  .wbox1 { display: inline-block; width: 36px; height: 36px; border: 1.5px solid var(--ink); vertical-align: middle; }
+  .fig svg { display: block; width: 220px; max-width: 100%; height: auto; }
+
+  /* ===== 印刷するプリント ===== */
+  .paper { background: #fff; max-width: 794px; margin: 12px auto; padding: 28px 34px; box-shadow: 0 1px 4px rgba(0,0,0,.12); font-size: 14.5px; }
+  .ph { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2.5px solid var(--ink); padding-bottom: 6px; margin-bottom: 12px; gap: 12px; flex-wrap: wrap; }
+  .ph h1 { font-size: 20px; margin: 0; }
+  .ph .meta { font-size: 12px; color: var(--sub); }
+  .ph .fields { font-size: 13px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .ph .fields span { display: inline-block; min-width: 110px; border-bottom: 1px solid var(--ink); }
+  .ph .tag { font-size: 11px; background: var(--ink); color: #fff; padding: 1px 8px; border-radius: 4px; }
+  .pq { padding: 10px 0 12px; border-bottom: 1px dashed var(--line); break-inside: avoid; }
+  .pq .no { font-weight: bold; font-size: 16px; margin-right: 4px; }
+  .pq .pts { font-size: 12px; color: var(--sub); }
+  .pq .body { display: flex; gap: 14px; align-items: flex-start; }
+  .pq .body .tx { flex: 1; }
+  .pq .fig { flex: 0 0 180px; }
+  .pq .fig svg { width: 180px; }
+  .pq .body { flex-wrap: wrap; }
+  .pq .fig.wide { flex: 0 0 100%; }
+  .pq .fig.wide svg { width: 400px; margin: 4px auto 0; }
+  .chs { margin: 6px 0 0 6px; }
+  .ansline { margin-top: 8px; text-align: right; font-size: 14px; }
+  .ansline .box { display: inline-block; min-width: 130px; border-bottom: 1.5px solid var(--ink); margin: 0 6px; }
+  .wbox { margin-top: 8px; border: 1.5px solid var(--ink); border-radius: 4px; }
+  .wbox div { height: 30px; border-bottom: 1px dotted #9ca3af; }
+  .wbox div:last-child { border-bottom: none; }
+  .key { color: var(--accent); font-weight: bold; }
+  .exp { background: var(--soft); border-radius: 6px; padding: 6px 10px; margin-top: 6px; font-size: 13.5px; }
+  .why { font-size: 12.5px; margin-top: 4px; }
+  .rub { background: var(--warnbg); border: 1px solid #fed7aa; border-radius: 6px; padding: 6px 10px; margin-top: 6px; font-size: 13px; }
+  .tt { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tt th, .tt td { border: 1px solid var(--line); padding: 5px 7px; text-align: left; vertical-align: top; }
+  .tt th { background: #f3f4f6; white-space: nowrap; }
+  .plan h3 { font-size: 15px; margin: 14px 0 4px; border-left: 4px solid var(--accent); padding-left: 8px; }
+  .plan .pp { font-size: 15.5px; font-weight: bold; border: 2px solid var(--accent); border-radius: 8px; padding: 8px 12px; margin-top: 10px; }
+  .plan .pl { display: inline-block; font-size: 11px; background: var(--accent); color: #fff; border-radius: 4px; padding: 0 6px; margin-right: 8px; vertical-align: 2px; }
+  .plan .flow { margin: 4px 0; padding-left: 22px; font-size: 13.5px; }
+  .plan .board { border: 2px solid #374151; background: #f8faf8; border-radius: 4px; padding: 8px 12px; font-size: 13.5px; line-height: 1.9; }
+  .plan .talk { font-size: 13.5px; }
+  .plan .tk { display: flex; gap: 8px; padding: 2px 0; border-bottom: 1px dotted #e5e7eb; }
+  .plan .tk .who { flex: 0 0 32px; font-size: 11px; font-weight: bold; color: #fff; background: var(--accent); border-radius: 4px; text-align: center; height: 18px; line-height: 18px; margin-top: 3px; }
+  .plan .tk.S .who { background: #059669; }
+  .toolbar { position: sticky; top: 0; z-index: 6; background: #fff; border-bottom: 1px solid var(--line); }
+  .toolbar .wrap { padding: 8px 16px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  @media print {
+    body { background: #fff; font-size: 13px; }
+    .noprint, .top, .toolbar { display: none !important; }
+    .wrap { padding: 0; max-width: none; }
+    .paper { box-shadow: none; margin: 0; padding: 0; max-width: none; }
+    @page { size: A4; margin: 13mm 14mm; }
+    .newpage { break-before: page; }
+  }
+</style>
+</head>
+<body>
+<div id="app"><div class="login"><div class="loading">読みこみ中…</div></div></div>
+
+<script>
+const S = { code: '', data: null, tab: 'make', grade: '小6', unit: null, qs: [], print: null, mode: 'student', score: null, anGrade: '小6' };
+const $app = document.getElementById('app');
+const KANA = { A: 'ア', B: 'イ', C: 'ウ', D: 'エ' };
+const CIRC = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
+
+// ---- 道具 ----
+// Apps Script の画面として開いたときは google.script.run、別の場所に置いたときは API_URL を呼ぶ
+const API_URL = 'https://script.google.com/macros/s/AKfycbwQ8MzIHvOK5BCYpRZlVg9EXnk12Bh79-98XdW0XS0sTI4-AK6Da_GY9RJYwkZzJGQ/exec';
+function run(fn, ...args) {
+  if (window.google && google.script && google.script.run) {
+    return new Promise((ok, ng) => google.script.run.withSuccessHandler(ok).withFailureHandler(e => ng(e))[fn](...args));
+  }
+  // クッキーを送らないので、Googleアカウントの切りかえ（/u/1/ など）がおきない
+  return fetch(API_URL, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn: fn, args: args }) })
+    .then(r => { if (!r.ok) throw new Error('通信できませんでした（' + r.status + '）'); return r.json(); })
+    .then(d => { if (!d.ok) throw new Error(d.error); return d.result; });
+}
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+/** 文字を安全にして、「1/2」を縦の分数にする */
+/**
+ * 文字を安全にして、分数を縦の形にする
+ * ・「3/4」→ 縦の分数。分子・分母は 数（小数も）・□・アルファベット1文字（x/3 など）
+ * ・「2と3/4」（帯分数）→「と」を消して、整数のすぐ右に分数をならべる
+ */
+const FR = '(\\d+(?:\\.\\d+)?|□|[a-zA-Z])';
+// 前後が英字・数字のときは分数にしない（km/h などをまちがえて分数にしないため）
+const FRAC_RE = new RegExp('(?<![a-zA-Z\\d.])(?:(\\d+)と)?' + FR + '\\/' + FR + '(?![\\d.a-zA-Z])', 'g');
+function fracHtml(n, d) { return '<span class="frac"><span class="fn">' + n + '</span><span class="fl"></span><span class="fd">' + d + '</span></span>'; }
+function fmt(s) {
+  return esc(s).replace(FRAC_RE, (m, whole, n, d) => whole ? '<span class="mixed"><span class="whole">' + whole + '</span>' + fracHtml(n, d) + '</span>' : fracHtml(n, d))
+    .replace(/\n/g, '<br>');
+}
+function fig(f) {
+  f = String(f || '').trim();
+  if (!f) return '';
+  // 横に広い図（viewBox の幅が330より大きい）は、問題文の下に大きく出す
+  const vb = f.match(/viewBox="[-\d.]+\s+[-\d.]+\s+([\d.]+)/);
+  const wide = vb && Number(vb[1]) > 330;
+  if (/^<svg[\s>]/i.test(f)) return '<div class="fig' + (wide ? ' wide' : '') + '">' + f.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '').replace(/javascript:/gi, '') + '</div>';
+  if (/^https:\/\//.test(f)) return '<div class="fig"><img src="' + esc(f) + '" style="max-width:220px"></div>';
+  return '';
+}
+function circ(n) { return CIRC[n - 1] || '(' + n + ')'; }
+function pct(r) { return r == null ? '−' : Math.round(r * 100) + '%'; }
+function rc(r) { return r == null ? '' : r < 0.4 ? 'r0' : r < 0.6 ? 'r1' : r < 0.8 ? 'r2' : 'r3'; }
+function errMsg(e) { return esc((e && e.message) || e || 'エラーが起きました'); }
+function store(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
+function load(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
+function loading(t) { $app.innerHTML = '<div class="loading">' + esc(t || '読みこみ中…') + '</div>'; }
+
+// ---- ログイン ----
+function showLogin(err) {
+  $app.innerHTML = `<div class="login card">
+    <h2 style="margin:4px 0 2px">桜中対策プリント</h2><div class="small">講師用 ／ 小4〜小6</div>
+    ${err ? '<div class="err">' + err + '</div>' : ''}
+    <div style="margin:16px 0"><input id="code" type="password" placeholder="講師コード" style="width:100%" autocomplete="current-password"></div>
+    <button class="pri" id="go" style="width:100%">入る</button></div>`;
+  const go = () => login(document.getElementById('code').value);
+  document.getElementById('go').onclick = go;
+  document.getElementById('code').onkeydown = e => { if (e.key === 'Enter') go(); };
+}
+async function login(code) {
+  loading();
+  try {
+    S.data = await run('startApp', code);
+    S.code = code; store('sk_code', code);
+    S.grade = load('sk_grade') || '小6';
+    S.anGrade = S.grade;
+    showMain();
+  } catch (e) { store('sk_code', null); showLogin(errMsg(e)); }
+}
+async function refresh() { S.data = await run('startApp', S.code); }
+
+// ---- 上のメニュー ----
+function shell(inner) {
+  const t = (k, l) => `<button data-tab="${k}" class="${S.tab === k ? 'on' : ''}">${l}</button>`;
+  $app.innerHTML = `<div class="top"><div class="wrap"><div class="brand">桜中対策プリント</div>
+    <div class="tabs">${t('make', 'プリントを作る')}${t('list', '作ったプリント・点数')}${t('weak', '苦手な単元')}</div>
+    <button id="out" class="small">出る</button></div></div><div class="wrap" id="main">${inner}</div>`;
+  $app.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { S.tab = b.dataset.tab; S.unit = null; showMain(); });
+  document.getElementById('out').onclick = () => { store('sk_code', null); S.code = ''; showLogin(); };
+}
+function showMain() {
+  if (S.tab === 'list') return showList();
+  if (S.tab === 'weak') return showWeak();
+  if (S.unit) return showUnit();
+  showMake();
+}
+function gradeChips(cur, id) {
+  return `<div class="chips" id="${id}">${['小4', '小5', '小6'].map(g => `<button data-g="${g}" class="${g === cur ? 'on' : ''}">${g}</button>`).join('')}</div>`;
+}
+
+// ---- プリントを作る：学年 → 月 → 週（単元） ----
+const SUBJECTS = ['算数', '国語', '理科', '社会'];
+/** 「1」「2〜3」「1,2」→ [1] / [2,3] / [1,2] */
+function weeksOf(w) {
+  const s = String(w || '').replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+  const m = s.match(/(\d)\s*[〜~～\-－ー]\s*(\d)/);
+  if (m) { const a = []; for (let i = +m[1]; i <= +m[2]; i++) a.push(i); return a; }
+  return (s.match(/\d/g) || []).map(Number);
+}
+function thisWeek() { return Math.min(4, Math.ceil(new Date().getDate() / 7)); }
+function showMake() {
+  S.subj = S.subj || load('sk_subj') || '算数';
+  const list = (S.data.curriculum[S.grade] || []).filter(u => S.subj === '全部' || u.subject === S.subj);
+  // 月ごと → 教科ごと → 週ごとにまとめる（教材の範囲・復習は教科ごとに1回だけ出す）
+  const months = [];
+  list.forEach(u => {
+    let m = months.find(x => x.m === u.month); if (!m) months.push(m = { m: u.month, subs: [] });
+    let s = m.subs.find(x => x.subject === u.subject); if (!s) m.subs.push(s = { subject: u.subject, range: u.range, review: u.review, units: [] });
+    if (!s.range && u.range) s.range = u.range;
+    if (!s.review && u.review) s.review = u.review;
+    s.units.push(u);
+  });
+  const now = S.data.month, wk = thisWeek();
+  const unitCard = u => `<div class="unit ${u.total ? '' : 'empty'}" data-u="${esc(u.unit)}"><div><div class="nm">${esc(u.unit)}</div>
+    ${u.detail ? `<div class="pt">${esc(u.detail)}</div>` : ''}
+    ${u.point ? `<div class="pt" style="color:var(--accent)">桜中ポイント：${esc(u.point)}</div>` : ''}
+    ${u.hasPlan ? '<div class="pt"><span class="tp" style="background:#ecfdf5;color:#047857">台本あり</span></div>' : ''}
+    ${u.from && u.from.length ? `<div class="pt">まとめる単元：${esc(u.from.join('、'))}</div>` : ''}</div>
+    <div class="cnt">${u.from && u.from.length ? (u.total ? `自動で${S.grade === '小4' ? 10 : 12}問えらんで作る ›` : '問題なし') : u.total ? '問題 ' + u.total + '問 ›' : '問題なし'}</div></div>`;
+  const weekLabel = (ws, isNow) => `<div class="wk ${isNow ? 'now' : ''}">${ws.length ? '第' + (ws.length > 1 ? ws[0] + '〜' + ws[ws.length - 1] : ws[0]) + '週' : '週の指定なし'}${isNow ? '（今週）' : ''}</div>`;
+  const subjBlock = (m, s) => {
+    const groups = [];
+    s.units.forEach(u => { const k = String(u.week || ''); let g = groups.find(x => x.k === k); if (!g) groups.push(g = { k: k, ws: weeksOf(k), units: [] }); g.units.push(u); });
+    groups.sort((a, b) => (a.ws[0] || 9) - (b.ws[0] || 9));
+    const hasTest = !s.units.some(u => weeksOf(u.week).includes(4));
+    const canTest = s.units.some(u => u.total);
+    return `${S.subj === '全部' ? `<div class="small" style="margin:2px 0 0 4px"><span class="tp">${esc(s.subject)}</span></div>` : ''}
+      ${groups.map(g => weekLabel(g.ws, m.m === now && g.ws.includes(wk)) + g.units.map(unitCard).join('')).join('')}
+      ${hasTest ? weekLabel([4], m.m === now && wk === 4) + `<div class="unit test ${canTest ? '' : 'empty'}" ${canTest ? `data-test="${m.m}"` : ''} data-subj="${esc(s.subject)}"><div><div class="nm">${m.m}月の確認テスト</div>
+        <div class="pt">この月の単元の問題から、自動で${S.grade === '小4' ? 10 : 12}問えらんで作ります（挑戦レベルはのぞく）</div></div><div class="cnt">${canTest ? '作る ›' : '問題なし'}</div></div>` : ''}
+      ${s.review ? `<div class="small" style="margin:0 0 4px 4px">復習：${esc(s.review)}</div>` : ''}`;
+  };
+  const subjChips = `<div class="chips" id="sc">${SUBJECTS.concat('全部').map(s => `<button data-s="${s}" class="${s === S.subj ? 'on' : ''}">${s}</button>`).join('')}</div>`;
+  // 月はボタンでえらび、えらんだ月の指導内容だけを出す（はじめは今月）
+  if (!months.some(m => m.m === S.month)) S.month = months.some(m => m.m === now) ? now : (months[0] || {}).m;
+  const cur = months.find(m => m.m === S.month);
+  const monthBtns = `<div class="mgrid" id="mc">${months.map(m => `<button data-m="${m.m}" class="${m.m === S.month ? 'on' : ''} ${m.m === now ? 'now' : ''}">${m.m}月</button>`).join('')}</div>`;
+  shell(`${gradeChips(S.grade, 'gc')}${subjChips}${monthBtns}
+    ${months.length ? '' : '<div class="card">この学年・教科の単元はありません。</div>'}
+    ${cur ? `<div class="mhead">${S.grade}・${cur.m}月の指導内容${cur.m === now ? '<span class="small">（今月）</span>' : ''}</div>
+    <div class="small">週1回の授業の予定です。単元をえらぶと、授業プリントと宿題プリントを作れます。「問題なし」の単元は、「問題」シートに問題を足すと使えます。◎は特殊算の単元です。</div>
+    ${cur.subs.map(s => subjBlock(cur, s)).join('')}` : ''}`);
+  document.querySelectorAll('#gc [data-g]').forEach(b => b.onclick = () => { S.grade = b.dataset.g; store('sk_grade', S.grade); showMake(); });
+  document.querySelectorAll('#mc [data-m]').forEach(b => b.onclick = () => { S.month = Number(b.dataset.m); showMake(); });
+  document.querySelectorAll('#sc [data-s]').forEach(b => b.onclick = () => { S.subj = b.dataset.s; store('sk_subj', S.subj); showMake(); });
+  document.querySelectorAll('.unit[data-u]').forEach(d => d.onclick = async () => {
+    const u = list.find(x => x.unit === d.dataset.u);
+    if (!u || !u.total) return;
+    if (!(u.from && u.from.length)) { S.unit = u; showUnit(); return; }
+    // 総まとめ：前の単元の問題から自動で作る
+    loading('まとめプリントを作っています…');
+    try {
+      S.print = await run('createReviewPrint', S.code, S.grade, u.unit);
+      refresh().catch(() => {});
+      S.mode = 'student'; showPrint();
+    } catch (e) { showMake(); alert(e.message || e); }
+  });
+  document.querySelectorAll('.unit[data-test]').forEach(d => d.onclick = async () => {
+    loading('確認テストを作っています…');
+    try {
+      S.print = await run('createTestPrint', S.code, S.grade, d.dataset.subj, Number(d.dataset.test));
+      refresh().catch(() => {});
+      S.mode = 'student'; showPrint();
+    } catch (e) { showMake(); alert(e.message || e); }
+  });
+}
+
+// ---- 単元：授業プリントと宿題プリントを作る ----
+async function showUnit() {
+  shell('<div class="loading">問題を読みこみ中…</div>');
+  try { S.qs = await run('getUnitQuestions', S.code, S.grade, S.unit.unit); }
+  catch (e) { document.getElementById('main').innerHTML = '<div class="err">' + errMsg(e) + '</div>'; return; }
+  const u = S.unit;
+  const section = kind => {
+    const qs = S.qs.filter(q => q.use === kind);
+    return `<div class="card" data-kind="${kind}">
+      <div class="row"><b>${kind === '授業' ? '授業で解く問題' : '宿題'}</b><span class="small" data-sel></span>
+        <button class="pri" data-make style="margin-left:auto"${qs.length ? '' : ' disabled'}>${kind}プリントを作る</button></div>
+      ${qs.length ? qs.map(q => `<label class="qpick"><input type="checkbox" value="${esc(q.id)}" data-lv="${esc(q.level)}" checked>
+        <div><div><span class="lv ${esc(q.level)}">${esc(q.level)}</span><span class="tp">${{ choice: '4択', number: '答えを書く', write: '説明' }[q.type]}</span>
+        <span class="small">${esc(q.id)}・${esc(q.sub)}・${q.points}点</span></div><div class="t">${fmt(q.text)}</div></div></label>`).join('')
+      : `<div class="small">${kind}用の問題はまだありません。「問題」シートの「用途」に「${kind}」と入れると、ここに出ます。</div>`}</div>`;
+  };
+  document.getElementById('main').innerHTML = `
+    <div class="row noprint"><button id="back">‹ 単元にもどる</button>
+      <span class="chips" id="lvf" style="margin:0 0 0 auto">${['全部', '基本', '標準', '挑戦'].map(l => `<button data-l="${l}">${l === '全部' ? '全部' : l + 'だけ'}</button>`).join('')}</span></div>
+    <div class="card"><div class="small">${esc(S.grade)}・${u.month}月${u.week ? '・第' + esc(u.week) + '週' : ''}・${esc(u.subject)}</div><h2 style="margin:2px 0">${esc(u.unit)}</h2>
+      ${u.detail ? `<div class="small">${esc(u.detail)}</div>` : ''}
+      ${u.point ? `<div class="small">桜中ポイント：${esc(u.point)}</div>` : ''}
+      ${u.script ? `<div class="small"><a href="${esc(u.script)}" target="_blank" rel="noopener">講師用台本をひらく</a></div>` : ''}</div>
+    ${section('授業')}${section('宿題')}`;
+  document.getElementById('back').onclick = () => { S.unit = null; showMake(); };
+  const cards = [...document.querySelectorAll('[data-kind]')];
+  const count = card => {
+    const on = [...card.querySelectorAll('.qpick input')].filter(b => b.checked);
+    const pts = S.qs.filter(q => on.some(b => b.value === q.id)).reduce((s, q) => s + q.points, 0);
+    card.querySelector('[data-sel]').textContent = on.length ? '　' + on.length + '問・' + pts + '点満点' : '';
+  };
+  cards.forEach(card => { card.querySelectorAll('.qpick input').forEach(b => b.onchange = () => count(card)); count(card); });
+  document.querySelectorAll('#lvf [data-l]').forEach(b => b.onclick = () => {
+    cards.forEach(card => { card.querySelectorAll('.qpick input').forEach(x => { x.checked = b.dataset.l === '全部' || x.dataset.lv === b.dataset.l; }); count(card); });
+  });
+  cards.forEach(card => card.querySelector('[data-make]').onclick = async e => {
+    const kind = card.dataset.kind;
+    const ids = [...card.querySelectorAll('.qpick input')].filter(b => b.checked).map(b => b.value);
+    if (!ids.length) return alert('問題を1つ以上えらんでください。');
+    e.target.disabled = true; e.target.textContent = '作っています…';
+    try {
+      S.print = await run('createPrint', S.code, S.grade, u.unit, ids, '', kind);
+      refresh().catch(() => {});
+      S.mode = 'student'; showPrint();
+    } catch (err) { alert(err.message || err); e.target.disabled = false; e.target.textContent = kind + 'プリントを作る'; }
+  });
+}
+
+// ---- 印刷画面 ----
+function showPrint() {
+  const d = S.print, p = d.print;
+  const m = (k, l) => `<button data-m="${k}" class="${S.mode === k ? 'pri' : ''}">${l}</button>`;
+  $app.innerHTML = `<div class="toolbar"><div class="wrap"><button id="back">‹ もどる</button>
+    ${m('student', '生徒用プリント')}${m('answer', '解答・解説')}${m('teacher', '講師用（採点のめやす）')}
+    <button class="pri" id="pr" style="margin-left:auto">🖨 印刷する</button></div></div>
+    <div class="wrap"><div class="paper">${S.mode === 'student' ? paperStudent(d) : S.mode === 'answer' ? paperAnswer(d) : paperTeacher(d)}</div></div>`;
+  document.getElementById('back').onclick = () => { S.tab = 'list'; S.unit = null; showMain(); };
+  document.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { S.mode = b.dataset.m; showPrint(); window.scrollTo(0, 0); });
+  document.getElementById('pr').onclick = () => window.print();
+}
+function head(d, tag, fields) {
+  const p = d.print;
+  return `<div class="ph"><div>${tag ? `<span class="tag">${tag}</span> ` : ''}<span class="meta">${esc(d.school)}・桜中対策　${esc(p.grade)}・${esc(p.unit)}　${esc(p.id)}</span>
+    <h1>${esc(p.title)}</h1></div>${fields ? `<div class="fields">${fields}</div>` : ''}</div>`;
+}
+function paperStudent(d) {
+  return head(d, d.print.kind === '授業' ? '' : d.print.kind, `<div>日付 <span></span></div><div>名前 <span></span></div><div>得点 <span style="min-width:70px"></span>／${d.total}点</div>`) +
+    d.questions.map((q, i) => {
+      let ans = '';
+      if (q.type === 'choice') ans = `<div class="chs">${q.choices.map(c => `<div>${KANA[c.letter]}　${fmt(c.text)}</div>`).join('')}</div><div class="ansline">答え（<span class="box" style="min-width:60px"></span>）</div>`;
+      else if (q.type === 'number') {
+        // 答えが分数のときは、分子と分母を書くわく（帯分数のときは整数のわくも）
+        const fr = /\d\/\d/.test(q.answer) && !/[時行番目分秒]/.test(q.answer.replace(/\d\/\d+/g, ''));
+        const fbox = '<span class="fbox"><span class="n"></span><span class="fbar"></span><span class="d"></span></span>';
+        ans = fr ? `<div class="ansline">答え ${/と/.test(q.answer) ? '<span class="wbox1"></span>' : ''}${fbox}${esc(q.unitLabel)}</div>`
+          : `<div class="ansline">答え<span class="box"></span>${esc(q.unitLabel)}</div>`;
+      }
+      else ans = `<div class="wbox">${'<div></div>'.repeat(Math.max(2, q.lines || 5))}</div>`;
+      return `<div class="pq"><div class="body"><div class="tx"><span class="no">${circ(i + 1)}</span><span class="pts">（${q.points}点）</span> ${fmt(q.text)}</div>${fig(q.figure)}</div>${ans}</div>`;
+    }).join('');
+}
+function keyText(q) {
+  if (q.type === 'choice') { const c = q.choices.find(x => x.letter === q.answer); return KANA[q.answer] + (c ? '　' + c.text : ''); }
+  if (q.type === 'number') return q.answer + q.unitLabel;
+  return '下の模範解答';
+}
+function paperAnswer(d) {
+  // 生徒にわたしてもよい内容だけ（採点のめやす・まちがいやすい点は講師用に出す）
+  return head(d, '解答・解説') + d.questions.map((q, i) => {
+    const why = q.type === 'choice' ? q.choices.filter(c => c.letter !== q.answer && q.reasons[c.letter]).map(c => `${KANA[c.letter]}を選んだ人：${esc(q.reasons[c.letter])}`).join('　／　') : '';
+    return `<div class="pq"><div><span class="no">${circ(i + 1)}</span>答え <span class="key">${fmt(keyText(q))}</span><span class="pts">（${q.points}点）</span></div>
+      <div class="exp">${fmt(q.exp)}</div>${why ? `<div class="why">${why}</div>` : ''}</div>`;
+  }).join('');
+}
+/** 台本（1ページ目）：一言ポイント → 解説の流れ → 板書案 → 話す台本 */
+function planHtml(p) {
+  if (!p) return '';
+  // 話す台本は「T：」（講師）「S：」（生徒）で始まる行。それ以外はそのまま
+  const talk = p.talk.map(l => {
+    const m = l.match(/^([TS])[：:](.*)$/);
+    return m ? `<div class="tk ${m[1]}"><span class="who">${m[1] === 'T' ? '講師' : '生徒'}</span><span>${fmt(m[2].trim())}</span></div>` : `<div class="tk">${fmt(l)}</div>`;
+  }).join('');
+  return `<div class="plan">
+    <div class="pp"><span class="pl">一言でいうと</span>${fmt(p.point)}</div>
+    ${p.flow.length ? `<h3>解説の流れ</h3><ol class="flow">${p.flow.map(l => `<li>${fmt(l)}</li>`).join('')}</ol>` : ''}
+    ${p.board.length ? `<h3>板書案</h3><div class="board">${p.board.map(l => `<div>${fmt(l)}</div>`).join('')}</div>` : ''}
+    ${p.talk.length ? `<h3>話す台本</h3><div class="talk">${talk}</div>` : ''}
+  </div>`;
+}
+function paperTeacher(d) {
+  return head(d, '講師用・塾内のみ') +
+    (d.time ? `<div class="rub" style="background:var(--soft);border-color:#c7d7fb"><b>時間配分（${esc(d.print.kind)}）</b>　${esc(d.time)}</div>` : '') +
+    (d.point ? `<div class="rub"><b>桜中ポイント</b>　${esc(d.point)}</div>` : '') +
+    (d.script ? `<div class="small noprint" style="margin:6px 0"><a href="${esc(d.script)}" target="_blank" rel="noopener">講師用台本をひらく</a></div><div class="small" style="margin:6px 0">台本：${esc(d.script)}</div>` : '') +
+    planHtml(d.plan) +
+    `<h3 class="${d.plan ? 'newpage' : ''}" style="font-size:15px;margin:14px 0 4px">答えと採点のめやす</h3>` +
+    `<table class="tt"><tr><th>番号</th><th>小単元・レベル</th><th>答え</th><th>採点のめやす／まちがいやすい点</th></tr>
+    ${d.questions.map((q, i) => `<tr><td>${circ(i + 1)}<br><span class="small">${q.points}点</span></td><td>${esc(q.sub)}<br><span class="lv ${esc(q.level)}">${esc(q.level)}</span></td>
+      <td>${q.type === 'write' ? fmt(q.exp) : '<b>' + fmt(keyText(q)) + '</b>'}</td>
+      <td>${q.rubric ? fmt(q.rubric) : ''}${q.rubric && q.caution ? '<br>' : ''}${q.caution ? '⚠ ' + fmt(q.caution) : ''}${!q.rubric && !q.caution ? '<span class="small">○か×（部分点なし）</span>' : ''}</td></tr>`).join('')}
+    </table><div class="small" style="margin-top:8px">合計 ${d.total}点。採点したら、アプリの「作ったプリント・点数」から点数を入れてください。</div>`;
+}
+
+// ---- 作ったプリント・点数 ----
+function showList() {
+  const ps = S.data.prints || [];
+  shell(`<div class="small">プリントをえらんで、もう一度印刷したり、採点した点数を入れたりできます。</div>
+    ${ps.length ? `<div class="scroll"><table class="grid"><tr><th>ID</th><th>作成日</th><th>学年</th><th>種類</th><th class="l">タイトル（単元）</th><th>点数を入れた人数</th><th></th></tr>
+    ${ps.map(p => `<tr><td>${esc(p.id)}</td><td>${esc(p.date)}</td><td>${esc(p.grade)}</td><td><span class="tp">${esc(p.kind)}</span></td><td class="l">${esc(p.title)}<div class="small">${esc(p.unit)}・${p.ids.length}問</div></td>
+      <td>${p.scored}人</td><td style="white-space:nowrap"><button data-pr="${esc(p.id)}">印刷</button> <button class="pri" data-sc="${esc(p.id)}">点数を入れる</button></td></tr>`).join('')}
+    </table></div>` : '<div class="card">まだプリントがありません。「プリントを作る」から作ってください。</div>'}`);
+  document.querySelectorAll('[data-pr]').forEach(b => b.onclick = async () => {
+    loading('プリントを読みこみ中…');
+    try { S.print = await run('getPrint', S.code, b.dataset.pr); S.mode = 'student'; showPrint(); } catch (e) { showList(); alert(e.message || e); }
+  });
+  document.querySelectorAll('[data-sc]').forEach(b => b.onclick = () => showScore(b.dataset.sc));
+}
+
+async function showScore(id) {
+  shell('<div class="loading">読みこみ中…</div>');
+  let d;
+  try { d = S.score = await run('getScoreSheet', S.code, id); }
+  catch (e) { document.getElementById('main').innerHTML = '<div class="err">' + errMsg(e) + '</div>'; return; }
+  const qs = d.questions;
+  document.getElementById('main').innerHTML = `
+    <div class="row"><button id="back">‹ プリントの一覧</button></div>
+    <div class="card"><b>${esc(d.print.title)}</b>　<span class="small">${esc(d.print.grade)}・${esc(d.print.unit)}・${esc(d.print.id)}・${d.total}点満点</span>
+      <div class="small">問題ごとに点数を入れます（Enterで下の人へ）。休んだ人・出していない人は空らんのままにすると、記録しません。</div></div>
+    ${d.students.length ? `<div class="scroll"><table class="grid" id="tbl"><tr><th class="l">名前</th>${qs.map(q => `<th>${circ(q.no)}<br>${q.points}点</th>`).join('')}<th>合計</th><th></th></tr>
+    ${d.students.map((s, r) => `<tr data-st="${esc(s.id)}"><td class="l" style="white-space:nowrap">${esc(s.name)}</td>
+      ${qs.map((q, c) => `<td><input class="sc" inputmode="decimal" data-r="${r}" data-c="${c}" data-max="${q.points}" data-q="${esc(q.id)}" value="${s.scores && s.scores[q.id] != null ? s.scores[q.id] : ''}"></td>`).join('')}
+      <td class="sum">−</td><td style="white-space:nowrap"><button class="small" data-full="${r}">満点</button> <button class="small" data-clear="${r}">空に</button></td></tr>`).join('')}
+    </table></div>
+    <div class="row" style="margin-top:12px"><button class="pri" id="save">保存する</button><span id="smsg"></span></div>`
+    : `<div class="card">${esc(d.print.grade)}の生徒が「生徒」シートにいません。スプレッドシートの「生徒」シートに、生徒ID・氏名・学年を入れてください。</div>`}`;
+  document.getElementById('back').onclick = () => { S.tab = 'list'; showMain(); };
+  if (!d.students.length) return;
+  const inputs = [...document.querySelectorAll('.sc')];
+  const at = (r, c) => inputs.find(i => +i.dataset.r === r && +i.dataset.c === c);
+  const sumRow = tr => {
+    let got = 0, max = 0;
+    tr.querySelectorAll('.sc').forEach(i => {
+      const v = i.value.trim(), n = Number(v.replace(/[０-９．]/g, x => String.fromCharCode(x.charCodeAt(0) - 0xFEE0)));
+      const bad = v !== '' && !(n >= 0 && n <= +i.dataset.max);
+      i.classList.toggle('bad', bad);
+      if (v !== '' && !bad) { got += n; max += +i.dataset.max; }
+    });
+    tr.querySelector('.sum').textContent = max ? got + '／' + max : '−';
+  };
+  document.querySelectorAll('#tbl tr[data-st]').forEach(sumRow);
+  inputs.forEach(i => {
+    i.oninput = () => sumRow(i.closest('tr'));
+    i.onkeydown = e => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const n = at(+i.dataset.r + 1, +i.dataset.c) || at(0, +i.dataset.c + 1);
+      if (n) { n.focus(); n.select(); }
+    };
+  });
+  document.querySelectorAll('[data-full]').forEach(b => b.onclick = () => { inputs.filter(i => i.dataset.r === b.dataset.full).forEach(i => { i.value = i.dataset.max; }); sumRow(b.closest('tr')); });
+  document.querySelectorAll('[data-clear]').forEach(b => b.onclick = () => { inputs.filter(i => i.dataset.r === b.dataset.clear).forEach(i => { i.value = ''; }); sumRow(b.closest('tr')); });
+  document.getElementById('save').onclick = async e => {
+    if (document.querySelector('.sc.bad')) return alert('赤いらんの点数を直してください（0〜配点の数）。');
+    const rows = [...document.querySelectorAll('#tbl tr[data-st]')].map(tr => {
+      const scores = {};
+      tr.querySelectorAll('.sc').forEach(i => { scores[i.dataset.q] = i.value.trim() === '' ? '' : Number(i.value.trim().replace(/[０-９．]/g, x => String.fromCharCode(x.charCodeAt(0) - 0xFEE0))); });
+      return { id: tr.dataset.st, scores: scores };
+    });
+    e.target.disabled = true;
+    const msg = document.getElementById('smsg');
+    msg.textContent = '保存しています…';
+    try {
+      const r = await run('saveScores', S.code, d.print.id, rows);
+      msg.innerHTML = `<span class="msg">${r.saved}人分を保存しました${r.removed ? '（空らんにした' + r.removed + '人分の記録を消しました）' : ''}</span>`;
+      refresh().catch(() => {});
+    } catch (err) { msg.innerHTML = '<span class="err">' + errMsg(err) + '</span>'; }
+    e.target.disabled = false;
+  };
+}
+
+// ---- 苦手な単元 ----
+async function showWeak() {
+  shell(`${gradeChips(S.anGrade, 'ac')}<div id="an"><div class="loading">集計しています…</div></div>`);
+  document.querySelectorAll('#ac [data-g]').forEach(b => b.onclick = () => { S.anGrade = b.dataset.g; showWeak(); });
+  let a;
+  try { a = await run('getAnalysis', S.code, S.anGrade); }
+  catch (e) { document.getElementById('an').innerHTML = '<div class="err">' + errMsg(e) + '</div>'; return; }
+  const used = a.units.filter(u => u.n);
+  if (!used.length) { document.getElementById('an').innerHTML = '<div class="card">まだ点数が入っていません。プリントを採点したら「作ったプリント・点数」から点数を入れてください。</div>'; return; }
+  const low = used.filter(u => u.avg < a.weakRate).sort((x, y) => x.avg - y.avg);
+  document.getElementById('an').innerHTML = `
+    ${low.length ? `<div class="card" style="border-color:#fed7aa;background:var(--warnbg)"><b>復習したい単元</b>（クラスの平均が${Math.round(a.weakRate * 100)}%未満）<br>${low.map(u => esc(u.unit) + '（' + pct(u.avg) + '）').join('、')}</div>` : ''}
+    <div class="card"><b>生徒ごとの得点率</b>　<span class="small">色：<span class="r0">　40%未満　</span> <span class="r1">　60%未満　</span> <span class="r2">　80%未満　</span> <span class="r3">　80%以上　</span></span>
+    <div class="scroll" style="margin-top:6px"><table class="grid"><tr><th class="l">名前</th>${used.map(u => `<th>${esc(u.unit)}${u.month ? '<br>' + u.month + '月' : ''}</th>`).join('')}<th>全体</th><th class="l">苦手な単元</th></tr>
+    ${a.students.map(s => `<tr><td class="l" style="white-space:nowrap">${esc(s.name)}</td>${used.map(u => `<td class="${rc(s.rates[u.unit])}">${pct(s.rates[u.unit])}</td>`).join('')}
+      <td class="${rc(s.total)}"><b>${pct(s.total)}</b></td><td class="l">${s.weak.length ? s.weak.map(esc).join('、') : '<span class="small">なし</span>'}</td></tr>`).join('')}
+    <tr><td class="l"><b>平均</b></td>${used.map(u => `<td class="${rc(u.avg)}"><b>${pct(u.avg)}</b><div class="small">${u.n}人</div></td>`).join('')}<td></td><td></td></tr>
+    </table></div></div>
+    ${a.hard.length ? `<div class="card"><b>得点率の低い問題</b>（次の授業の最初に復習）
+      <table class="grid" style="margin-top:6px"><tr><th>問題</th><th class="l">単元・内容</th><th>得点率</th><th>人数</th></tr>
+      ${a.hard.map(h => `<tr><td style="white-space:nowrap">${esc(h.id)}</td><td class="l"><div class="small">${esc(h.unit)}・${esc(h.sub)}</div>${fmt(String(h.text).slice(0, 70))}${h.text.length > 70 ? '…' : ''}</td>
+        <td class="${rc(h.rate)}">${pct(h.rate)}</td><td>${h.n}</td></tr>`).join('')}</table></div>` : ''}`;
+}
+
+// ---- はじめ ----
+(function () {
+  const c = load('sk_code');
+  if (c) login(c); else showLogin();
+})();
+</script>
+</body>
+</html>
