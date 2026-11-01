@@ -322,9 +322,12 @@ async function showUnit() {
     <div class="card"><div class="small">${esc(S.grade)}・${u.month}月${u.week ? '・第' + esc(u.week) + '週' : ''}・${esc(u.subject)}</div><h2 style="margin:2px 0">${esc(u.unit)}</h2>
       ${u.detail ? `<div class="small">${esc(u.detail)}</div>` : ''}
       ${u.point ? `<div class="small">桜中ポイント：${esc(u.point)}</div>` : ''}
-      ${u.script ? `<div class="small"><a href="${esc(u.script)}" target="_blank" rel="noopener">講師用台本をひらく</a></div>` : ''}</div>
+      ${u.script ? `<div class="small"><a href="${esc(u.script)}" target="_blank" rel="noopener">講師用台本をひらく</a></div>` : ''}
+      <div class="row" style="margin-top:8px"><button class="pri" id="prep">📖 予習する（${u.hasPlan ? '台本・' : ''}答えと解説）</button>
+        <span class="small">プリントは作りません。授業の前に読むためのページです</span></div></div>
     ${section('授業')}${section('宿題')}`;
   document.getElementById('back').onclick = () => { S.unit = null; showMake(); };
+  document.getElementById('prep').onclick = () => showPrep();
   const cards = [...document.querySelectorAll('[data-kind]')];
   const count = card => {
     const on = [...card.querySelectorAll('.qpick input')].filter(b => b.checked);
@@ -346,6 +349,36 @@ async function showUnit() {
       S.mode = 'student'; showPrint();
     } catch (err) { alert(err.message || err); e.target.disabled = false; e.target.textContent = kind + 'プリントを作る'; }
   });
+}
+
+// ---- 予習：台本と、授業・宿題の問題の答え・解説を読む（プリントは作らない） ----
+async function showPrep() {
+  loading('予習のページを読みこみ中…');
+  let d;
+  try { d = await run('getPrep', S.code, S.grade, S.unit.unit); }
+  catch (e) { showUnit(); alert(e.message || e); return; }
+  const qBlock = (q, i) => {
+    const chs = q.type === 'choice' ? `<div class="chs">${q.choices.map(c => `<div${c.letter === q.answer ? ' style="font-weight:bold"' : ''}>${KANA[c.letter]}　${fmt(c.text)}</div>`).join('')}</div>` : '';
+    const why = q.type === 'choice' ? q.choices.filter(c => c.letter !== q.answer && q.reasons[c.letter]).map(c => `${KANA[c.letter]}を選んだ人：${esc(q.reasons[c.letter])}`).join('　／　') : '';
+    return `<div class="pq"><div class="body"><div class="tx"><span class="no">${circ(i + 1)}</span><span class="lv ${esc(q.level)}">${esc(q.level)}</span> <span class="small">${esc(q.sub)}・${q.points}点</span><br>${fmt(q.text)}</div>${fig(q.figure)}</div>${chs}
+      <div style="margin-top:4px">答え <span class="key">${q.type === 'write' ? '（記述）' : fmt(keyText(q))}</span></div>
+      <div class="exp">${fmt(q.exp)}</div>${why ? `<div class="why">${why}</div>` : ''}
+      ${q.rubric ? `<div class="rub"><b>採点のめやす</b>　${fmt(q.rubric)}</div>` : ''}${q.caution ? `<div class="rub"><b>⚠ まちがいやすい点</b>　${fmt(q.caution)}</div>` : ''}</div>`;
+  };
+  $app.innerHTML = `<div class="toolbar"><div class="wrap"><button id="back">‹ 単元にもどる</button>
+    <button class="pri" id="pr" style="margin-left:auto">🖨 印刷する</button></div></div>
+    <div class="wrap"><div class="paper">${head(d, '予習用・塾内のみ')}
+      <div class="small">${esc(d.print.grade)}・${d.month}月${d.week ? '・第' + esc(d.week) + '週' : ''}・${esc(d.subject)}${d.detail ? '　' + esc(d.detail) : ''}</div>
+      ${d.time ? `<div class="rub" style="background:var(--soft);border-color:#c7d7fb"><b>時間配分（授業）</b>　${esc(d.time)}</div>` : ''}
+      ${d.point ? `<div class="rub"><b>桜中ポイント</b>　${esc(d.point)}</div>` : ''}
+      ${d.plan ? planHtml(d.plan) : '<div class="rub">この単元の台本は、まだありません。下の問題の解説と「まちがいやすい点」を見て準備してください。</div>'}
+      <h3 class="${d.plan ? 'newpage' : ''}" style="font-size:15px;margin:14px 0 4px">授業で解く問題（${d.questions.length}問・${d.total}点）</h3>
+      ${d.questions.length ? d.questions.map(qBlock).join('') : '<div class="small">授業用の問題はまだありません。</div>'}
+      ${d.homework.length ? `<h3 style="font-size:15px;margin:14px 0 4px">宿題（${d.homework.length}問）</h3>${d.homework.map(qBlock).join('')}` : ''}
+    </div></div>`;
+  document.getElementById('back').onclick = () => showUnit();
+  document.getElementById('pr').onclick = () => window.print();
+  window.scrollTo(0, 0);
 }
 
 // ---- 印刷画面 ----
