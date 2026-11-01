@@ -323,8 +323,8 @@ async function showUnit() {
       ${u.detail ? `<div class="small">${esc(u.detail)}</div>` : ''}
       ${u.point ? `<div class="small">桜中ポイント：${esc(u.point)}</div>` : ''}
       ${u.script ? `<div class="small"><a href="${esc(u.script)}" target="_blank" rel="noopener">講師用台本をひらく</a></div>` : ''}
-      <div class="row" style="margin-top:8px"><button class="pri" id="prep">📖 予習する（${u.hasPlan ? '台本・' : ''}答えと解説）</button>
-        <span class="small">プリントは作りません。授業の前に読むためのページです</span></div></div>
+      <div class="row" style="margin-top:8px"><button class="pri" id="prep">📖 台本を表示</button>
+        <span class="small">授業の前に読む講師用のページです（台本・答えと解説）。プリントは作りません</span></div></div>
     ${section('授業')}${section('宿題')}`;
   document.getElementById('back').onclick = () => { S.unit = null; showMake(); };
   document.getElementById('prep').onclick = () => showPrep();
@@ -351,9 +351,9 @@ async function showUnit() {
   });
 }
 
-// ---- 予習：台本と、授業・宿題の問題の答え・解説を読む（プリントは作らない） ----
+// ---- 台本の表示：台本と、授業・宿題の問題の答え・解説を読む（プリントは作らない） ----
 async function showPrep() {
-  loading('予習のページを読みこみ中…');
+  loading('台本を読みこみ中…');
   let d;
   try { d = await run('getPrep', S.code, S.grade, S.unit.unit); }
   catch (e) { showUnit(); alert(e.message || e); return; }
@@ -367,7 +367,7 @@ async function showPrep() {
   };
   $app.innerHTML = `<div class="toolbar"><div class="wrap"><button id="back">‹ 単元にもどる</button>
     <button class="pri" id="pr" style="margin-left:auto">🖨 印刷する</button></div></div>
-    <div class="wrap"><div class="paper">${head(d, '予習用・塾内のみ')}
+    <div class="wrap"><div class="paper">${head(d, '講師用台本・塾内のみ')}
       <div class="small">${esc(d.print.grade)}・${d.month}月${d.week ? '・第' + esc(d.week) + '週' : ''}・${esc(d.subject)}${d.detail ? '　' + esc(d.detail) : ''}</div>
       ${d.time ? `<div class="rub" style="background:var(--soft);border-color:#c7d7fb"><b>時間配分（授業）</b>　${esc(d.time)}</div>` : ''}
       ${d.point ? `<div class="rub"><b>桜中ポイント</b>　${esc(d.point)}</div>` : ''}
