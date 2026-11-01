@@ -114,6 +114,15 @@
   .plan .tk { display: flex; gap: 8px; padding: 2px 0; border-bottom: 1px dotted #e5e7eb; }
   .plan .tk .who { flex: 0 0 32px; font-size: 11px; font-weight: bold; color: #fff; background: var(--accent); border-radius: 4px; text-align: center; height: 18px; line-height: 18px; margin-top: 3px; }
   .plan .tk.S .who { background: #059669; }
+  .plan .prep { font-size: 13.5px; margin-top: 8px; }
+  .plan .trip { display: flex; flex-wrap: wrap; gap: 4px 8px; font-size: 13.5px; padding: 3px 0; border-bottom: 1px dotted #e5e7eb; }
+  .plan .trip .ng { color: var(--ng); }
+  .plan .trip .arrow { color: var(--sub); }
+  .plan .trip .say { font-weight: bold; }
+  .plan .ans { font-size: 13.5px; border: 1px solid #fcd9b6; background: var(--warnbg); border-radius: 6px; padding: 6px 10px; }
+  .plan details.more { margin-top: 14px; }
+  .plan details.more > summary { cursor: pointer; font-weight: bold; color: var(--accent); padding: 8px 10px; border: 1px dashed var(--accent); border-radius: 8px; }
+  @media print { .plan details.more > summary { display: none; } }
   .toolbar { position: sticky; top: 0; z-index: 6; background: #fff; border-bottom: 1px solid var(--line); }
   .toolbar .wrap { padding: 8px 16px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
@@ -186,7 +195,7 @@ function showLogin(err) {
   $app.innerHTML = `<div class="login card">
     <h2 style="margin:4px 0 2px">桜中対策プリント</h2><div class="small">講師用 ／ 小4〜小6</div>
     ${err ? '<div class="err">' + err + '</div>' : ''}
-    <div style="margin:16px 0"><input id="code" type="password" placeholder="講師コード" style="width:100%" autocomplete="current-password"></div>
+    <div style="margin:16px 0"><input id="code" type="text" placeholder="講師コード" style="width:100%" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
     <button class="pri" id="go" style="width:100%">入る</button></div>`;
   const go = () => login(document.getElementById('code').value);
   document.getElementById('go').onclick = go;
@@ -427,21 +436,38 @@ function paperAnswer(d) {
       <div class="exp">${fmt(q.exp)}</div>${why ? `<div class="why">${why}</div>` : ''}</div>`;
   }).join('');
 }
-/** 台本（1ページ目）：一言ポイント → 解説の流れ → 板書案 → 話す台本 */
+/**
+ * 台本は2段がまえ。1枚目「授業カード」（一言・準備・授業の流れ・板書・つまずいたら）だけで授業ができるようにし、
+ * くわしい台本（解説の進め方・話す台本・説明問題の答え方）は画面ではたたんでおく（印刷するときは開いて2枚目から）
+ */
 function planHtml(p) {
   if (!p) return '';
+  const steps = p.steps || [], trips = p.trips || [], answers = p.answers || [];
   // 話す台本は「T：」（講師）「S：」（生徒）で始まる行。それ以外はそのまま
   const talk = p.talk.map(l => {
     const m = l.match(/^([TS])[：:](.*)$/);
     return m ? `<div class="tk ${m[1]}"><span class="who">${m[1] === 'T' ? '講師' : '生徒'}</span><span>${fmt(m[2].trim())}</span></div>` : `<div class="tk">${fmt(l)}</div>`;
   }).join('');
+  // つまずいたら：「まちがい ⇒ 声かけ」
+  const trip = l => { const [a, b] = l.split(/\s*⇒\s*/); return `<div class="trip"><span class="ng">${fmt(a)}</span>${b ? `<span class="arrow">→</span><span class="say">${fmt(b)}</span>` : ''}</div>`; };
+  // 「授業の流れ」がない古い台本は、解説の流れを1枚目に出す
+  const flowList = l => `<ol class="flow">${l.map(x => `<li>${fmt(x)}</li>`).join('')}</ol>`;
+  const more = [steps.length && p.flow.length ? `<h3>解説の進め方（くわしく）</h3>${flowList(p.flow)}` : '',
+    p.talk.length ? `<h3>話す台本</h3><div class="talk">${talk}</div>` : '',
+    answers.length ? `<h3>説明問題の答え方</h3><div class="ans">${answers.map(l => `<div>${fmt(l)}</div>`).join('')}</div>` : ''].join('');
   return `<div class="plan">
-    <div class="pp"><span class="pl">一言でいうと</span>${fmt(p.point)}</div>
-    ${p.flow.length ? `<h3>解説の流れ</h3><ol class="flow">${p.flow.map(l => `<li>${fmt(l)}</li>`).join('')}</ol>` : ''}
-    ${p.board.length ? `<h3>板書案</h3><div class="board">${p.board.map(l => `<div>${fmt(l)}</div>`).join('')}</div>` : ''}
-    ${p.talk.length ? `<h3>話す台本</h3><div class="talk">${talk}</div>` : ''}
+    <div class="card1">
+      <div class="pp"><span class="pl">一言でいうと</span>${fmt(p.point)}</div>
+      ${p.prep ? `<div class="prep"><b>準備</b>　${fmt(p.prep)}</div>` : ''}
+      ${steps.length ? `<h3>授業の流れ</h3>${flowList(steps)}` : p.flow.length ? `<h3>解説の流れ</h3>${flowList(p.flow)}` : ''}
+      ${p.board.length ? `<h3>板書</h3><div class="board">${p.board.map(l => `<div>${fmt(l)}</div>`).join('')}</div>` : ''}
+      ${trips.length ? `<h3>つまずいたら</h3>${trips.map(trip).join('')}` : ''}
+    </div>
+    ${more ? `<details class="more newpage"><summary>くわしい台本を見る（${[steps.length && p.flow.length ? '解説の進め方' : '', p.talk.length ? '話す台本' : '', answers.length ? '説明問題の答え方' : ''].filter(Boolean).join('・')}）</summary>${more}</details>` : ''}
   </div>`;
 }
+// 印刷するときは、たたんだ台本も開いて印刷する
+window.addEventListener('beforeprint', () => document.querySelectorAll('details.more').forEach(d => d.open = true));
 function paperTeacher(d) {
   return head(d, '講師用・塾内のみ') +
     (d.time ? `<div class="rub" style="background:var(--soft);border-color:#c7d7fb"><b>時間配分（${esc(d.print.kind)}）</b>　${esc(d.time)}</div>` : '') +
