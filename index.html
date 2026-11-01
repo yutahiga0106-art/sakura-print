@@ -326,7 +326,7 @@ async function showUnit() {
       : `<div class="small">${kind}用の問題はまだありません。「問題」シートの「用途」に「${kind}」と入れると、ここに出ます。</div>`}</div>`;
   };
   document.getElementById('main').innerHTML = `
-    <div class="row noprint"><button id="back">‹ 単元にもどる</button>
+    <div class="row noprint"><button id="back">‹ 戻る</button>
       <span class="chips" id="lvf" style="margin:0 0 0 auto">${['全部', '基本', '標準', '挑戦'].map(l => `<button data-l="${l}">${l === '全部' ? '全部' : l + 'だけ'}</button>`).join('')}</span></div>
     <div class="card"><div class="small">${esc(S.grade)}・${u.month}月${u.week ? '・第' + esc(u.week) + '週' : ''}・${esc(u.subject)}</div><h2 style="margin:2px 0">${esc(u.unit)}</h2>
       ${u.detail ? `<div class="small">${esc(u.detail)}</div>` : ''}
@@ -374,7 +374,7 @@ async function showPrep() {
       <div class="exp">${fmt(q.exp)}</div>${why ? `<div class="why">${why}</div>` : ''}
       ${q.rubric ? `<div class="rub"><b>採点のめやす</b>　${fmt(q.rubric)}</div>` : ''}${q.caution ? `<div class="rub"><b>⚠ まちがいやすい点</b>　${fmt(q.caution)}</div>` : ''}</div>`;
   };
-  $app.innerHTML = `<div class="toolbar"><div class="wrap"><button id="back">‹ 単元にもどる</button>
+  $app.innerHTML = `<div class="toolbar"><div class="wrap"><button id="back">‹ 戻る</button>
     <button class="pri" id="pr" style="margin-left:auto">🖨 印刷する</button></div></div>
     <div class="wrap"><div class="paper">${head(d, '講師用台本・塾内のみ')}
       <div class="small">${esc(d.print.grade)}・${d.month}月${d.week ? '・第' + esc(d.week) + '週' : ''}・${esc(d.subject)}${d.detail ? '　' + esc(d.detail) : ''}</div>
@@ -394,7 +394,7 @@ async function showPrep() {
 function showPrint() {
   const d = S.print, p = d.print;
   const m = (k, l) => `<button data-m="${k}" class="${S.mode === k ? 'pri' : ''}">${l}</button>`;
-  $app.innerHTML = `<div class="toolbar"><div class="wrap"><button id="back">‹ もどる</button>
+  $app.innerHTML = `<div class="toolbar"><div class="wrap"><button id="back">‹ 戻る</button>
     ${m('student', '生徒用プリント')}${m('answer', '解答・解説')}${m('teacher', '講師用（採点のめやす）')}
     <button class="pri" id="pr" style="margin-left:auto">🖨 印刷する</button></div></div>
     <div class="wrap"><div class="paper">${S.mode === 'student' ? paperStudent(d) : S.mode === 'answer' ? paperAnswer(d) : paperTeacher(d)}</div></div>`;
