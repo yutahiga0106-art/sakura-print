@@ -1,0 +1,13 @@
+{
+  "name": "桜中対策プリント",
+  "short_name": "中学受験",
+  "start_url": "./",
+  "scope": "./",
+  "display": "browser",
+  "background_color": "#0C447C",
+  "theme_color": "#0C447C",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
